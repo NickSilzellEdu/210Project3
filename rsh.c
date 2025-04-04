@@ -22,7 +22,7 @@ int isAllowed(const char*cmd) {
 
 // copy a file to another directory
 void command_cp(char* args[], int argc, pid_t pid, posix_spawnattr_t attr, int status){
-	if(posix_spawnp(&pid, "cd", NULL, &attr, args, environ) != 0){
+	if(posix_spawnp(&pid, "cp", NULL, &attr, args, environ) != 0){
 		perror("Spawn failed");
 		exit(EXIT_FAILURE);
 	}
@@ -140,10 +140,10 @@ void command_diff(char* args[], int argc, pid_t pid, posix_spawnattr_t attr, int
 void command_cd(char* args[], int argc){
 	// if command is more than "cd path/to/dir", fail
 	if(argc > 2){
-		printf("cd error: too many arguments");
+		printf("-rsh: cd: too many arguments\n");
 	}
 	else if(chdir(args[1]) != 0){
-		printf("cd error: directory \"%s\" not found", args[1]);
+		printf("cd: directory \"%s\" not found\n", args[1]);
 	}
 }
 
@@ -154,7 +154,7 @@ void command_exit(char* args[], int argc){
 
 // list all possible commands
 void command_help(char* args[], int argc){
-	printf("1: cp\n 2: touch\n 3: mkdir\n 4: ls\n 5: pwd\n 6: cat\n 7: grep\n 8: chmod\n 9: diff\n 10: cd\n 11: exit\n 12: help\n");
+	printf("The allowed commands are:\n1: cp\n2: touch\n3: mkdir\n4: ls\n5: pwd\n6: cat\n7: grep\n8: chmod\n9: diff\n10: cd\n11: exit\n12: help\n");
 }
 
 int main() {
@@ -164,7 +164,7 @@ int main() {
 	pid_t current_pid = 0;
 	int current_status = 0;
 	posix_spawnattr_t attr;
-	posix_spawnattr_init(attr);
+	posix_spawnattr_init(&attr);
 
     while (1) {
 
@@ -194,7 +194,7 @@ int main() {
 	argv[index] = NULL; // make sure array is NULL terminated
 	
 	// handle each command appropriately
-	if(isAllowed(command) == 0) printf("NOT ALLOWED!");
+	if(isAllowed(command) == 0) printf("NOT ALLOWED!\n");
 	else if(strcmp(command, "cp") == 0) command_cp(argv, index, current_pid, attr, current_status);
 	else if(strcmp(command, "touch") == 0) command_touch(argv, index, current_pid, attr, current_status);
 	else if(strcmp(command, "mkdir") == 0) command_mkdir(argv, index, current_pid, attr, current_status);
@@ -209,7 +209,7 @@ int main() {
 	else if(strcmp(command, "help") == 0) command_help(argv, index);
 
 	// free argv memory
-	for(int i = 0; argv[i] != NULL; i++){
+	for(int i = 1; argv[i] != NULL; i++){
 		free(argv[i]);
 	}
     }
